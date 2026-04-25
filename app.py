@@ -1,7 +1,7 @@
 #python -m venv venv
 
 #venv\Scripts\activate
-#streamlit run app.py
+#
 
 import streamlit as st
 import pickle
@@ -25,8 +25,7 @@ def load_files():
         with open("tokenizer.pkl", "rb") as f:
             tokenizer = pickle.load(f)
 
-        
-        model = load_model("lstm_model.keras")
+        model = load_model("lstm_model.h5")
 
         return tokenizer, model, None
 
