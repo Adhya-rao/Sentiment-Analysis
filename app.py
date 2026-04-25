@@ -1,3 +1,8 @@
+#python -m venv venv
+
+#venv\Scripts\activate
+#
+
 import streamlit as st
 import pickle
 import re
