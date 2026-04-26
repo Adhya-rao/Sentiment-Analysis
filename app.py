@@ -1,7 +1,8 @@
 #python -m venv venv
-
 #venv\Scripts\activate
-#
+
+#pip install streamlit tensorflow numpy
+#streamlit run app.py
 
 import streamlit as st
 import pickle
@@ -49,7 +50,14 @@ else:
 def clean_text(text):
     text = text.lower()
     text = re.sub(r'<.*?>', ' ', text)
-    text = re.sub(r'[^a-zA-Z!?]', ' ', text)
+
+    # handle contractions
+    text = re.sub(r"n't", " not", text)
+
+    # 🔥 handle negation
+    text = re.sub(r'\bnot\s+(\w+)', r'not_\1', text)
+
+    text = re.sub(r'[^a-zA-Z_!?]', ' ', text)
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
