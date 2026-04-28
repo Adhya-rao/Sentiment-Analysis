@@ -4,9 +4,15 @@
 #pip install streamlit tensorflow numpy
 #streamlit run app.py
 
+import os
+# MUST stay at the very top
+os.environ["TF_USE_LEGACY_KERAS"] = "1"
+
 import streamlit as st
 import pickle
 import re
+import numpy as np
+import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
@@ -18,7 +24,7 @@ st.set_page_config(page_title="Sentiment Analysis", layout="centered")
 st.title("🎬 Movie Review Sentiment Analysis")
 
 # -------------------------------
-# Load tokenizer and model (SAFE)
+# Load tokenizer and model
 # -------------------------------
 @st.cache_resource
 def load_files():
@@ -26,7 +32,8 @@ def load_files():
         with open("tokenizer.pkl", "rb") as f:
             tokenizer = pickle.load(f)
 
-        model = load_model("lstm_model.h5")
+        # Added compile=False to bypass the quantization error
+        model = load_model("lstm_model.h5", compile=False)
 
         return tokenizer, model, None
 
@@ -50,13 +57,8 @@ else:
 def clean_text(text):
     text = text.lower()
     text = re.sub(r'<.*?>', ' ', text)
-
-    # handle contractions
     text = re.sub(r"n't", " not", text)
-
-    # 🔥 handle negation
     text = re.sub(r'\bnot\s+(\w+)', r'not_\1', text)
-
     text = re.sub(r'[^a-zA-Z_!?]', ' ', text)
     text = re.sub(r'\s+', ' ', text).strip()
     return text
@@ -66,11 +68,11 @@ def clean_text(text):
 # -------------------------------
 def predict_sentiment(text):
     text = clean_text(text)
-
     seq = tokenizer.texts_to_sequences([text])
+    # maxlen should match what you used during training (usually 100 or 200)
     padded = pad_sequences(seq, maxlen=100, padding='post', truncating='post')
 
-    pred = model.predict(padded)[0][0]
+    pred = model.predict(padded, verbose=0)[0][0]
 
     if pred > 0.5:
         return "Positive 😊", pred
@@ -81,33 +83,17 @@ def predict_sentiment(text):
 # UI Input
 # -------------------------------
 st.write("Type a movie review and check whether it's Positive or Negative.")
-
 review = st.text_area("Enter your review here:", height=150)
 
-# Example buttons
-col1, col2 = st.columns(2)
-
-with col1:
-    if st.button("Example Positive"):
-        review = "This movie was absolutely amazing and I loved it!"
-
-with col2:
-    if st.button("Example Negative"):
-        review = "This movie was boring and a complete waste of time."
-
-# -------------------------------
-# Prediction Button
-# -------------------------------
 if st.button("Predict"):
-
     if review.strip() == "":
         st.warning("⚠️ Please enter a review first.")
     else:
-        result, confidence = predict_sentiment(review)
+        with st.spinner("Analyzing sentiment..."):
+            result, confidence = predict_sentiment(review)
+            if "Positive" in result:
+                st.success(f"Prediction: {result}")
+            else:
+                st.error(f"Prediction: {result}")
+            st.write(f"Confidence Score: {confidence:.4f}")
 
-        if "Positive" in result:
-            st.success(f"Prediction: {result}")
-        else:
-            st.error(f"Prediction: {result}")
-
-        st.write(f"Confidence Score: {confidence:.4f}")
