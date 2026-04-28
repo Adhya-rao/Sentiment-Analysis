@@ -13,6 +13,7 @@ import pickle
 import re
 import numpy as np
 import tensorflow as tf
+from tensorflow import keras
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
