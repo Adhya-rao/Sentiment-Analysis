@@ -13,6 +13,9 @@ The application predicts whether a given movie review is:
 A simple and interactive web app is built using **Streamlit**.
 
 ---
+## Deployed Link 
+
+  https://sentiment-analysis-upkuyjhiccmuy8bzudskeh.streamlit.app/
 
 ## 🚀 Features
 
